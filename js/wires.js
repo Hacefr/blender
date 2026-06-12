@@ -11,8 +11,9 @@ function initWires() {
     wires = [];
     selectedWire = null;
     
-    // Create start nodes on the left side (pixel heights down the canvas)
+    // Create start nodes on the left side (fixed pixel heights down the canvas)
     const leftPositions =;
+    
     // Create target slots on the right side and shuffle them randomly
     const rightPositions = [150, 250, 350, 450].sort(() => Math.random() - 0.5);
 
