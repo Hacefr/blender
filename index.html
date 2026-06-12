@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRENDER</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <!-- MAIN MENU LAYER -->
+    <div id="main-menu" class="screen">
+        <h1 class="game-title">BRENDER</h1>
+        <div class="menu-buttons">
+            <button onclick="changeState('PLAY')">PLAY</button>
+            <button onclick="changeState('SETTINGS')">SETTINGS</button>
+            <button onclick="changeState('EXTRAS')">CHALLENGES (EXTRAS)</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS LAYER -->
+    <div id="settings-menu" class="screen hidden">
+        <h2>SETTINGS</h2>
+        <div class="settings-content">
+            <label>Master Volume: <input type="range" min="0" max="100" value="80"></label>
+            <br><br>
+            <label><input type="checkbox"> Colorblind Wire Mode</label>
+        </div>
+        <button class="back-btn" onclick="changeState('MENU')">BACK TO MENU</button>
+    </div>
+
+    <!-- EXTRAS / CHALLENGES LAYER -->
+    <div id="extras-menu" class="screen hidden">
+        <h2>CHALLENGES</h2>
+        <p>Experimental modes live here!</p>
+        <button class="back-btn" onclick="changeState('MENU')">BACK TO MENU</button>
+    </div>
+
+    <!-- GAMEPLAY CANVAS LAYER -->
+    <div id="gameplay-screen" class="screen hidden">
+        <div id="level-hud">LEVEL: <span id="hud-level-num">1</span></div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <button class="back-btn" onclick="changeState('MENU')">QUIT TO MENU</button>
+    </div>
+
+    <!-- LOAD COMPONENT SCRIPTS FIRST -->
+    <script src="js/ui.js"></script>
+    <script src="js/wires.js"></script>
+    <script src="js/levels.js"></script>
+    
+    <!-- MAIN CONTROLLER KICKS IT ALL OFF -->
+    <script src="game.js"></script>
+</body>
+</html>
