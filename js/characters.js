@@ -11,6 +11,20 @@ for (let i = 0; i <= 5; i++) {
     brawlerImages.push(img);
 }
 
+// Set up the smash sound effect using a standard browser Audio constructor
+const crackSound = new Audio("sounds/crack.mp3");
+
+// Safe helper function to play your smash noise on click
+function playCrackSound() {
+    // Reset the audio playback position to the start so it can instantly interrupt itself if clicked rapidly
+    crackSound.currentTime = 0;
+    
+    // Play with a safe promise catch blocks so the game never crashes if your sound folder is missing the file
+    crackSound.play().catch((error) => {
+        console.log("Audio alert: 'sounds/crack.mp3' file is missing or still loading.");
+    });
+}
+
 // Timer variable to control how often characters pop up
 let spawnTimer = null;
 
@@ -22,7 +36,7 @@ function startEnemySpawner() {
         spawnTimer = null;
     }
 
-    // CRITICAL FIX: Always read the current level state from the master Game object dynamically
+    // Always read the current level state from the master Game object dynamically
     if (Game && Game.currentLevel >= 11) {
         spawnTimer = setInterval(() => {
             if (Game.isLoopRunning && Game.state === "PLAY") {
@@ -70,6 +84,9 @@ function checkCharacterClick(mx, my) {
         // Simple bounding box collision check
         if (mx >= enemy.x && mx <= enemy.x + enemy.width &&
             my >= enemy.y && my <= enemy.y + enemy.height) {
+            
+            // CRITICAL AUDIO ADDITION: Trigger the crack noise right on hit!
+            playCrackSound();
             
             // Advance to the next decay stage sprite
             enemy.stage++;
