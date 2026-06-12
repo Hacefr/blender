@@ -4,19 +4,14 @@ const LevelDatabase = {};
 // Generate standard rules for all 50 levels automatically
 function setupLevelDatabase() {
     for (let i = 1; i <= 50; i++) {
-        // Base configurations
-        let targetWires = 3; // Default requirement
-        let description = "Tutorial: Master the wire dragging basics.";
+        // For the tutorial (1-10) and base system, you must connect all 4 wires on screen
+        let targetWires = 4; 
+        let description = "Connect all wires to clear the circuit.";
 
-        // Tutorial Escalation (Levels 1 to 10)
         if (i <= 10) {
-            targetWires = 2 + Math.floor(i / 2); // Scales up from 2 to 7 wires
-            description = `Tutorial Step ${i}: Speed up your connections.`;
-        } 
-        // Future Enemy Levels (11 to 50)
-        else {
-            targetWires = 6 + Math.floor(i / 5); // Requirements scale higher
-            description = `Chaos Tier: Keep your cool under pressure.`;
+            description = "Tutorial Step " + i + ": Speed up your connections.";
+        } else {
+            description = "Chaos Tier " + (i - 10) + ": Keep your cool under pressure.";
         }
 
         LevelDatabase[i] = {
@@ -35,7 +30,7 @@ function checkLevelProgress(completedCount) {
     const currentRule = LevelDatabase[Game.currentLevel];
     
     if (completedCount >= currentRule.requiredWires) {
-        console.log(`Level ${Game.currentLevel} Clear!`);
+        console.log("Level " + Game.currentLevel + " Clear!");
         advanceToNextLevel();
     }
 }
@@ -52,7 +47,7 @@ function advanceToNextLevel() {
         
         // Update the visual HUD element instantly
         document.getElementById("hud-level-num").innerText = Game.currentLevel;
-        console.log(`Now Entering Level ${Game.currentLevel}`);
+        console.log("Now Entering Level " + Game.currentLevel);
     } else {
         console.log("CONGRATULATIONS! You fully cleared Brender!");
         changeState("MENU"); // Bounce back to menu on grand victory
