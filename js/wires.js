@@ -1,21 +1,21 @@
 // Wire Component State
-let wires = [];
+let wires = new Array();
 let selectedWire = null; // Tracks which wire the player is currently dragging
 let levelWiresCompleted = 0; // Tracks successful wire matches in the current level
 
 // Color palette for the classic matching puzzle task
-const WIRE_COLORS = ["#ff3366", "#33ccff", "#ffcc00", "#33ff66"];
+const WIRE_COLORS = new Array("#ff3366", "#33ccff", "#ffcc00", "#33ff66");
 
 // Initialize a brand new set of wires for the level layout
 function initWires() {
-    wires = [];
+    wires = new Array();
     selectedWire = null;
     
     // Create start nodes on the left side (fixed pixel heights down the canvas)
-    const leftPositions =;
+    const leftPositions = new Array(150, 250, 350, 450);
     
     // Create target slots on the right side and shuffle them randomly
-    const rightPositions = [150, 250, 350, 450].sort(() => Math.random() - 0.5);
+    const rightPositions = new Array(150, 250, 350, 450).sort(() => Math.random() - 0.5);
 
     for (let i = 0; i < WIRE_COLORS.length; i++) {
         wires.push({
@@ -97,7 +97,7 @@ canvas.addEventListener("mouseup", () => {
         selectedWire.currentY = selectedWire.targetY;
         
         levelWiresCompleted++;
-        console.log(`Connected wire! Total: ${levelWiresCompleted}`);
+        console.log("Connected wire! Total: " + levelWiresCompleted);
         
         // Push progress to levels.js validation controller
         if (typeof checkLevelProgress === "function") {
