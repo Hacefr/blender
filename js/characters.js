@@ -19,10 +19,11 @@ function startEnemySpawner() {
     // Clear any old timers first so they do not double up
     if (spawnTimer !== null) {
         clearInterval(spawnTimer);
+        spawnTimer = null;
     }
 
-    // Only spawn monsters if the player is on Level 11 or higher
-    if (Game.currentLevel >= 11) {
+    // CRITICAL FIX: Always read the current level state from the master Game object dynamically
+    if (Game && Game.currentLevel >= 11) {
         spawnTimer = setInterval(() => {
             if (Game.isLoopRunning && Game.state === "PLAY") {
                 // Limit the maximum number of stacked enemies to 5 at once
@@ -35,6 +36,9 @@ function startEnemySpawner() {
                 }
             }
         }, 3000); // A new monster spawns every 3 seconds
+        console.log("Enemy Spawner ACTIVATED for Level " + Game.currentLevel);
+    } else {
+        console.log("Enemy Spawner dormant. Current level is below 11.");
     }
 }
 
