@@ -21,6 +21,11 @@ function changeState(newState) {
         case "MENU":
             document.getElementById("main-menu").classList.remove("hidden");
             Game.isLoopRunning = false;
+            // Stop any active enemy timers when returning to menu
+            if (typeof startEnemySpawner === "function") {
+                Game.currentLevel = 1; // Reset level for a clean next run
+                startEnemySpawner();
+            }
             break;
         case "SETTINGS":
             document.getElementById("settings-menu").classList.remove("hidden");
@@ -33,6 +38,13 @@ function changeState(newState) {
             initGameplay();
             break;
     }
+}
+
+// Developer Cheat Function to warp straight to the action
+function triggerCheatLevel11() {
+    console.log("Developer Warp Activated! Setting game state to Level 11...");
+    Game.currentLevel = 11;
+    changeState("PLAY");
 }
 
 // Fired once when player clicks PLAY
@@ -74,7 +86,7 @@ function advanceToNextLevel() {
             resetWiresForNewLevel();
         }
         
-        // CRITICAL SPRAWNER FIX: Force check and start the enemy system for the new level height
+        // Force check and start the enemy system for the new level height
         if (typeof startEnemySpawner === "function") {
             startEnemySpawner();
         }
