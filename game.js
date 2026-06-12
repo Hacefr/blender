@@ -46,7 +46,7 @@ function initGameplay() {
         initWires();
     }
     
-    // Kick off our character spawning rules
+    // Kick off our character spawning rules on initial load
     if (typeof startEnemySpawner === "function") {
         startEnemySpawner();
     }
@@ -74,9 +74,9 @@ function advanceToNextLevel() {
             resetWiresForNewLevel();
         }
         
-        // Reset our characters system for the new level stage
-        if (typeof resetCharactersForNewLevel === "function") {
-            resetCharactersForNewLevel();
+        // CRITICAL SPRAWNER FIX: Force check and start the enemy system for the new level height
+        if (typeof startEnemySpawner === "function") {
+            startEnemySpawner();
         }
         
         // Update the visual HUD element instantly
