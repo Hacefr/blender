@@ -11,7 +11,7 @@ const Game = {
     lastTimeCheck: 0     
 };
 
-// State Manager: Switches screens and runs custom startup tasks
+// State Manager: Switches screens cleanly
 function changeState(newState) {
     Game.state = newState;
     
@@ -24,9 +24,6 @@ function changeState(newState) {
         case "MENU":
             document.getElementById("main-menu").classList.remove("hidden");
             Game.isLoopRunning = false;
-            if (typeof startEnemySpawner === "function") {
-                startEnemySpawner();
-            }
             break;
         case "SETTINGS":
             document.getElementById("settings-menu").classList.remove("hidden");
@@ -60,15 +57,15 @@ function initGameplay() {
     console.log("Initialising Level " + Game.currentLevel + "...");
     document.getElementById("hud-level-num").innerText = Game.currentLevel;
     
-    if (typeof resetWiresForNewLevel === "function") {
-        resetWiresForNewLevel();
-    }
-    
+    // Calculate fuse timer window based on difficulty scaling
     Game.maxLevelTime = Math.max(15, 40 - Math.floor(Game.currentLevel / 2));
     Game.levelTimer = Game.maxLevelTime;
     Game.lastTimeCheck = performance.now();
 
-    Game.isLoopRunning = true;
+    // Reset components for the fresh level layout
+    if (typeof initWires === "function") {
+        initWires();
+    }
     
     if (typeof startEnemySpawner === "function") {
         startEnemySpawner();
@@ -77,7 +74,9 @@ function initGameplay() {
     if (typeof startTrashSpawner === "function") {
         startTrashSpawner();
     }
-    
+
+    // Start engine loop flag
+    Game.isLoopRunning = true;
     requestAnimationFrame(mainGameLoop);
 }
 
@@ -98,8 +97,8 @@ function advanceToNextLevel() {
         Game.levelTimer = Game.maxLevelTime;
         Game.lastTimeCheck = performance.now();
 
-        if (typeof resetWiresForNewLevel === "function") {
-            resetWiresForNewLevel();
+        if (typeof initWires === "function") {
+            initWires();
         }
         
         if (typeof startEnemySpawner === "function") {
@@ -118,61 +117,6 @@ function advanceToNextLevel() {
         changeState("MENU"); 
     }
 }
-
-// Global Centralized Input Interceptors
-window.addEventListener("DOMContentLoaded", () => {
-    const gameCanvasElement = document.getElementById("gameCanvas");
-    if (!gameCanvasElement) return;
-
-    gameCanvasElement.addEventListener("mousedown", (e) => {
-        if (Game.state !== "PLAY") return;
-        const rect = gameCanvasElement.getBoundingClientRect();
-        let mx = e.clientX - rect.left;
-        let my = e.clientY - rect.top;
-
-        // 1. Rock check
-        if (typeof checkCharacterClick === "function" && checkCharacterClick(mx, my)) {
-            return;
-        }
-
-        // 2. Trash check
-        if (typeof checkTrashClick === "function" && checkTrashClick(mx, my)) {
-            return;
-        }
-
-        // 3. Wires check
-        if (typeof checkWiresClick === "function") {
-            checkWiresClick(mx, my);
-        }
-    });
-
-    gameCanvasElement.addEventListener("mousemove", (e) => {
-        if (Game.state !== "PLAY") return;
-        const rect = gameCanvasElement.getBoundingClientRect();
-        let mx = e.clientX - rect.left;
-        let my = e.clientY - rect.top;
-
-        if (typeof updateTrashDragging === "function") {
-            updateTrashDragging(mx, my);
-        }
-
-        if (typeof updateWiresDragging === "function") {
-            updateWiresDragging(mx, my);
-        }
-    });
-
-    gameCanvasElement.addEventListener("mouseup", () => {
-        if (Game.state !== "PLAY") return;
-
-        if (typeof releaseTrashDrop === "function") {
-            releaseTrashDrop();
-        }
-
-        if (typeof releaseWiresDrop === "function") {
-            releaseWiresDrop();
-        }
-    });
-});
 
 // Helper drawing module to render the countdown warning bar across the top
 function drawAdrenalineTimer() {
