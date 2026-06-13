@@ -28,7 +28,7 @@ function startEnemySpawner() {
         spawnTimer = setInterval(() => {
             if (Game.isLoopRunning && Game.state === "PLAY") {
                 if (activeEnemies.length < 5) {
-                    // Centralized anchor bounds tracking
+                    // Safe canvas scale numbers
                     let randomX = Math.floor(Math.random() * 400) + 150;
                     let randomY = Math.floor(Math.random() * 200) + 100;
                     
