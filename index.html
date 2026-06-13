@@ -20,7 +20,7 @@
                     ⚙️ DEV TESTER: SELECT LEVEL
                 </label>
                 <select id="dev-level-select" style="width: 100%; padding: 10px; background: #252538; color: white; border: 2px solid #444; font-size: 1.1rem; font-weight: bold; border-radius: 4px; cursor: pointer; text-align: center;">
-                    <!-- We will fill this with levels 1 to 50 using JavaScript automatically -->
+                    <!-- Filled automatically by game.js -->
                 </select>
                 <button onclick="triggerDevLevelTest()" style="margin-top: 10px; padding: 10px; font-size: 1rem; background: #ff3366; border-color: #ff6699;">
                     LAUNCH SELECTED LEVEL
@@ -57,14 +57,16 @@
         <button class="back-btn" onclick="changeState('MENU')">QUIT TO MENU</button>
     </div>
 
-    <!-- LOAD COMPONENT SCRIPTS FIRST -->
+    <!-- CORE UI INITIALIZED FIRST -->
     <script src="js/ui.js"></script>
+    
+    <!-- SUB-MODULE SYSTEMS -->
     <script src="js/characters.js"></script>
     <script src="js/trash.js"></script>
     <script src="js/wires.js"></script>
     <script src="js/levels.js"></script>
     
-    <!-- MAIN CONTROLLER KICKS IT ALL OFF -->
+    <!-- MAIN ENGINE CONTROLLER KICKS IT ALL OFF -->
     <script src="game.js"></script>
 </body>
 </html>
