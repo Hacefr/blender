@@ -33,8 +33,17 @@ function resetWiresForNewLevel() {
     initWires();
 }
 
-// Redirected event inputs controlled by global main panel loop hooks
-function checkWiresClick(mx, my) {
+// Independent, dedicated wire mouse handling click layer
+canvas.addEventListener("mousedown", (e) => {
+    if (Game.state !== "PLAY") return;
+    const rect = canvas.getBoundingClientRect();
+    let mx = e.clientX - rect.left;
+    let my = e.clientY - rect.top;
+
+    // Intercept check priorities: Rocks first, trash piles second
+    if (typeof checkCharacterClick === "function" && checkCharacterClick(mx, my)) return;
+    if (typeof checkTrashClick === "function" && checkTrashClick(mx, my)) return;
+
     for (let wire of wires) {
         if (!wire.isConnected) {
             const distance = Math.hypot(mx - wire.startX, my - wire.startY);
@@ -45,21 +54,24 @@ function checkWiresClick(mx, my) {
             }
         }
     }
-}
+});
 
-function updateWiresDragging(mx, my) {
+canvas.addEventListener("mousemove", (e) => {
+    if (Game.state !== "PLAY") return;
+    const rect = canvas.getBoundingClientRect();
+    let mx = e.clientX - rect.left;
+    let my = e.clientY - rect.top;
+
     if (selectedWire && selectedWire.isDragging) {
         selectedWire.currentX = mx;
         selectedWire.currentY = my;
     }
-}
+});
 
-function releaseWiresDrop() {
-    if (!selectedWire) return;
+canvas.addEventListener("mouseup", () => {
+    if (Game.state !== "PLAY" || !selectedWire) return;
 
     selectedWire.isDragging = false;
-
-    // Use current global positions updated from main engine mouse traps
     const distance = Math.hypot(selectedWire.currentX - selectedWire.targetX, selectedWire.currentY - selectedWire.targetY);
     
     if (distance < 25) {
@@ -79,7 +91,7 @@ function releaseWiresDrop() {
     }
 
     selectedWire = null;
-}
+});
 
 function updateAndDrawWires() {
     for (let wire of wires) {
