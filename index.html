@@ -12,8 +12,21 @@
     <div id="main-menu" class="screen">
         <h1 class="game-title">BRENDER</h1>
         <div class="menu-buttons">
-            <button onclick="changeState('PLAY')">PLAY</button>
-            <button onclick="triggerCheatLevel11()">DEV CHEAT: START LEVEL 11</button>
+            <button onclick="changeState('PLAY')">PLAY GAME (START LEVEL 1)</button>
+            
+            <!-- DEV DROP-DOWN LEVEL TESTER -->
+            <div style="background: #11111a; padding: 15px; border-radius: 6px; border: 1px dashed #ff3366; margin: 15px 0;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #ffcc00; font-size: 0.9rem;">
+                    ⚙️ DEV TESTER: SELECT LEVEL
+                </label>
+                <select id="dev-level-select" style="width: 100%; padding: 10px; background: #252538; color: white; border: 2px solid #444; font-size: 1.1rem; font-weight: bold; border-radius: 4px; cursor: pointer; text-align: center;">
+                    <!-- We will fill this with levels 1 to 50 using JavaScript automatically -->
+                </select>
+                <button onclick="triggerDevLevelTest()" style="margin-top: 10px; padding: 10px; font-size: 1rem; background: #ff3366; border-color: #ff6699;">
+                    LAUNCH SELECTED LEVEL
+                </button>
+            </div>
+
             <button onclick="changeState('SETTINGS')">SETTINGS</button>
             <button onclick="changeState('EXTRAS')">CHALLENGES (EXTRAS)</button>
         </div>
@@ -47,6 +60,7 @@
     <!-- LOAD COMPONENT SCRIPTS FIRST -->
     <script src="js/ui.js"></script>
     <script src="js/characters.js"></script>
+    <script src="js/trash.js"></script>
     <script src="js/wires.js"></script>
     <script src="js/levels.js"></script>
     
