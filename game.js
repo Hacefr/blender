@@ -26,9 +26,8 @@ function changeState(newState) {
         case "MENU":
             document.getElementById("main-menu").classList.remove("hidden");
             Game.isLoopRunning = false;
-            // Clear out systems on menu bounce
+            // Stop spawners when backing out to menu
             if (typeof startEnemySpawner === "function") {
-                Game.currentLevel = 1; 
                 startEnemySpawner();
             }
             break;
@@ -39,42 +38,53 @@ function changeState(newState) {
             document.getElementById("extras-menu").classList.remove("hidden");
             break;
         case "PLAY":
+            // Default PLAY button resets progress back to level 1
+            Game.currentLevel = 1; 
             document.getElementById("gameplay-screen").classList.remove("hidden");
             initGameplay();
             break;
     }
 }
 
-// Developer Cheat Function to warp straight to the action
-function triggerCheatLevel11() {
-    console.log("Developer Warp Activated! Setting game state to Level 11...");
-    Game.currentLevel = 11;
-    changeState("PLAY");
+// Developer Tester Function: Launches the game directly at the selected menu level
+function triggerDevLevelTest() {
+    const selectElement = document.getElementById("dev-level-select");
+    const chosenLevel = parseInt(selectElement.value);
+    
+    console.log("Developer Warp Triggered! Testing Level: " + chosenLevel);
+    Game.currentLevel = chosenLevel;
+    
+    // Swap directly onto the live screen board
+    document.getElementById("main-menu").classList.add("hidden");
+    document.getElementById("gameplay-screen").classList.remove("hidden");
+    
+    initGameplay();
 }
 
-// Fired once when player clicks PLAY
+// Fired once when player clicks PLAY or launches a test level
 function initGameplay() {
     console.log("Initialising Level " + Game.currentLevel + "...");
     document.getElementById("hud-level-num").innerText = Game.currentLevel;
     
+    // Reset our completed counts or entities cleanly
+    if (typeof resetWiresForNewLevel === "function") {
+        resetWiresForNewLevel();
+    }
+    
     // Calculate fuse timer window based on difficulty scaling
-    // Level 1 starts with a generous 40 seconds. Levels 40+ drop down to a strict 15 seconds!
     Game.maxLevelTime = Math.max(15, 40 - Math.floor(Game.currentLevel / 2));
     Game.levelTimer = Game.maxLevelTime;
     Game.lastTimeCheck = performance.now();
 
-    // Start up our loops and wiring modules
+    // Start up engine loop flag
     Game.isLoopRunning = true;
-    if (typeof initWires === "function") {
-        initWires();
-    }
     
-    // Kick off our character spawning rules on initial load
+    // Kick off our character spawning rules
     if (typeof startEnemySpawner === "function") {
         startEnemySpawner();
     }
 
-    // Launch trash systems on initial startup
+    // CRITICAL REFRESH TRIGGER: Force start and render trash scatter immediately on level load
     if (typeof startTrashSpawner === "function") {
         startTrashSpawner();
     }
@@ -85,7 +95,6 @@ function initGameplay() {
 
 // Master Level Progression Check Hook
 function checkLevelProgress(completedCount) {
-    // You always need exactly 4 wires to clear a board
     if (completedCount >= 4) {
         console.log("Level " + Game.currentLevel + " Clear!");
         advanceToNextLevel();
@@ -123,30 +132,25 @@ function advanceToNextLevel() {
     } else {
         console.log("CONGRATULATIONS! You fully cleared Brender!");
         alert("VICTORY! You connected all channels and cleared Brender!");
-        changeState("MENU"); // Bounce back to menu on grand victory
+        changeState("MENU"); 
     }
 }
 
 // Helper drawing module to render the countdown warning bar across the top
 function drawAdrenalineTimer() {
-    // Calculate remaining ratio percentage width
     let percentRemaining = Game.levelTimer / Game.maxLevelTime;
-    let barWidth = 600 * percentRemaining; // Scale to fit central canvas alignment
+    let barWidth = 600 * percentRemaining; 
     
-    // Choose tint context color dynamically (Green = Safe, Red = Absolute Emergency)
     let barColor = "#00ffcc";
     if (percentRemaining < 0.5) barColor = "#ffcc00";
     if (percentRemaining < 0.25) barColor = "#ff3333";
 
-    // Draw background track container bar
     ctx.fillStyle = "#222233";
     ctx.fillRect(100, 20, 600, 15);
 
-    // Draw the shrinking animated foreground energy fuse bar
     ctx.fillStyle = barColor;
     ctx.fillRect(100, 20, barWidth, 15);
     
-    // Draw thin visual highlight border casing
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1;
     ctx.strokeRect(100, 20, 600, 15);
@@ -156,15 +160,12 @@ function drawAdrenalineTimer() {
 function mainGameLoop() {
     if (!Game.isLoopRunning) return;
 
-    // 1. Calculate time delta differences to track smooth second tick-downs
     let currentTime = performance.now();
     let elapsedSeconds = (currentTime - Game.lastTimeCheck) / 1000;
     Game.lastTimeCheck = currentTime;
 
-    // Tick the level timer down
     Game.levelTimer -= elapsedSeconds;
 
-    // Check for Game Over Loss conditions
     if (Game.levelTimer <= 0) {
         Game.isLoopRunning = false;
         console.log("CRITICAL FUSE FAILURE: Game Over!");
@@ -173,34 +174,44 @@ function mainGameLoop() {
         return;
     }
 
-    // 2. Clear the canvas using our native UI hooks
     if (typeof clearGameCanvas === "function") {
         clearGameCanvas();
     }
 
-    // 3. Process and draw current active wires
     if (typeof updateAndDrawWires === "function") {
         updateAndDrawWires();
     }
     
-    // 4. Process and draw active character overlays on top of the wires
     if (typeof updateAndDrawCharacters === "function") {
         updateAndDrawCharacters();
     }
 
-    // 5. Process and draw active garbage drag obstacles
     if (typeof updateAndDrawTrash === "function") {
         updateAndDrawTrash();
     }
 
-    // 6. Draw the top adrenaline countdown overlay on top of everything
     drawAdrenalineTimer();
 
-    // Keep the engine spinning
     requestAnimationFrame(mainGameLoop);
 }
 
-// Run automatically on page launch
+// Run automatically on page launch to build the drop-down menu lists
 window.onload = () => {
     console.log("Brender Project Loaded Successfully.");
+    
+    // Automatically fill our drop-down tester selector element with option rows 1 to 50
+    const selectElement = document.getElementById("dev-level-select");
+    if (selectElement) {
+        for (let i = 1; i <= Game.maxLevels; i++) {
+            let option = document.createElement("option");
+            option.value = i;
+            option.text = "Level " + i;
+            
+            // Highlight specialty breaks on the tester box list labels
+            if (i === 11) option.text += " (Rock Enemy Introduces)";
+            if (i === 17) option.text += " (Trash & Bin Introduces)";
+            
+            selectElement.appendChild(option);
+        }
+    }
 };
