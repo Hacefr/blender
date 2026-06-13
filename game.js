@@ -6,27 +6,24 @@ const Game = {
     isLoopRunning: false,
     
     // Timer Variables
-    levelTimer: 30,      // Current seconds remaining
-    maxLevelTime: 30,    // Total allowed seconds for this level stage
-    lastTimeCheck: 0     // Performance timestamp helper
+    levelTimer: 30,      
+    maxLevelTime: 30,    
+    lastTimeCheck: 0     
 };
 
 // State Manager: Switches screens and runs custom startup tasks
 function changeState(newState) {
     Game.state = newState;
     
-    // Hide all layers first
     document.getElementById("main-menu").classList.add("hidden");
     document.getElementById("settings-menu").classList.add("hidden");
     document.getElementById("extras-menu").classList.add("hidden");
     document.getElementById("gameplay-screen").classList.add("hidden");
 
-    // Open target layer and fire initialization logic
     switch(newState) {
         case "MENU":
             document.getElementById("main-menu").classList.remove("hidden");
             Game.isLoopRunning = false;
-            // Stop spawners when backing out to menu
             if (typeof startEnemySpawner === "function") {
                 startEnemySpawner();
             }
@@ -38,8 +35,6 @@ function changeState(newState) {
             document.getElementById("extras-menu").classList.remove("hidden");
             break;
         case "PLAY":
-            // Default PLAY button resets progress back to level 1
-            Game.currentLevel = 1; 
             document.getElementById("gameplay-screen").classList.remove("hidden");
             initGameplay();
             break;
@@ -54,7 +49,6 @@ function triggerDevLevelTest() {
     console.log("Developer Warp Triggered! Testing Level: " + chosenLevel);
     Game.currentLevel = chosenLevel;
     
-    // Swap directly onto the live screen board
     document.getElementById("main-menu").classList.add("hidden");
     document.getElementById("gameplay-screen").classList.remove("hidden");
     
@@ -66,30 +60,24 @@ function initGameplay() {
     console.log("Initialising Level " + Game.currentLevel + "...");
     document.getElementById("hud-level-num").innerText = Game.currentLevel;
     
-    // Reset our completed counts or entities cleanly
     if (typeof resetWiresForNewLevel === "function") {
         resetWiresForNewLevel();
     }
     
-    // Calculate fuse timer window based on difficulty scaling
     Game.maxLevelTime = Math.max(15, 40 - Math.floor(Game.currentLevel / 2));
     Game.levelTimer = Game.maxLevelTime;
     Game.lastTimeCheck = performance.now();
 
-    // Start up engine loop flag
     Game.isLoopRunning = true;
     
-    // Kick off our character spawning rules
     if (typeof startEnemySpawner === "function") {
         startEnemySpawner();
     }
 
-    // CRITICAL REFRESH TRIGGER: Force start and render trash scatter immediately on level load
     if (typeof startTrashSpawner === "function") {
         startTrashSpawner();
     }
     
-    // Kick off main engine tick
     requestAnimationFrame(mainGameLoop);
 }
 
@@ -106,27 +94,22 @@ function advanceToNextLevel() {
     if (Game.currentLevel < Game.maxLevels) {
         Game.currentLevel++;
         
-        // Reset and recalculate the countdown window for the new level tier
         Game.maxLevelTime = Math.max(15, 40 - Math.floor(Game.currentLevel / 2));
         Game.levelTimer = Game.maxLevelTime;
         Game.lastTimeCheck = performance.now();
 
-        // Reset our wire module for the fresh level layout
         if (typeof resetWiresForNewLevel === "function") {
             resetWiresForNewLevel();
         }
         
-        // Force check and start the enemy system for the new level height
         if (typeof startEnemySpawner === "function") {
             startEnemySpawner();
         }
 
-        // Re-spawns a fresh batch of trash scatter piles if Level 17+
         if (typeof startTrashSpawner === "function") {
             startTrashSpawner();
         }
         
-        // Update the visual HUD element instantly
         document.getElementById("hud-level-num").innerText = Game.currentLevel;
         console.log("Now Entering Level " + Game.currentLevel);
     } else {
@@ -135,6 +118,61 @@ function advanceToNextLevel() {
         changeState("MENU"); 
     }
 }
+
+// Global Centralized Input Interceptors
+window.addEventListener("DOMContentLoaded", () => {
+    const gameCanvasElement = document.getElementById("gameCanvas");
+    if (!gameCanvasElement) return;
+
+    gameCanvasElement.addEventListener("mousedown", (e) => {
+        if (Game.state !== "PLAY") return;
+        const rect = gameCanvasElement.getBoundingClientRect();
+        let mx = e.clientX - rect.left;
+        let my = e.clientY - rect.top;
+
+        // 1. Rock check
+        if (typeof checkCharacterClick === "function" && checkCharacterClick(mx, my)) {
+            return;
+        }
+
+        // 2. Trash check
+        if (typeof checkTrashClick === "function" && checkTrashClick(mx, my)) {
+            return;
+        }
+
+        // 3. Wires check
+        if (typeof checkWiresClick === "function") {
+            checkWiresClick(mx, my);
+        }
+    });
+
+    gameCanvasElement.addEventListener("mousemove", (e) => {
+        if (Game.state !== "PLAY") return;
+        const rect = gameCanvasElement.getBoundingClientRect();
+        let mx = e.clientX - rect.left;
+        let my = e.clientY - rect.top;
+
+        if (typeof updateTrashDragging === "function") {
+            updateTrashDragging(mx, my);
+        }
+
+        if (typeof updateWiresDragging === "function") {
+            updateWiresDragging(mx, my);
+        }
+    });
+
+    gameCanvasElement.addEventListener("mouseup", () => {
+        if (Game.state !== "PLAY") return;
+
+        if (typeof releaseTrashDrop === "function") {
+            releaseTrashDrop();
+        }
+
+        if (typeof releaseWiresDrop === "function") {
+            releaseWiresDrop();
+        }
+    });
+});
 
 // Helper drawing module to render the countdown warning bar across the top
 function drawAdrenalineTimer() {
@@ -199,7 +237,6 @@ function mainGameLoop() {
 window.onload = () => {
     console.log("Brender Project Loaded Successfully.");
     
-    // Automatically fill our drop-down tester selector element with option rows 1 to 50
     const selectElement = document.getElementById("dev-level-select");
     if (selectElement) {
         for (let i = 1; i <= Game.maxLevels; i++) {
@@ -207,7 +244,6 @@ window.onload = () => {
             option.value = i;
             option.text = "Level " + i;
             
-            // Highlight specialty breaks on the tester box list labels
             if (i === 11) option.text += " (Rock Enemy Introduces)";
             if (i === 17) option.text += " (Trash & Bin Introduces)";
             
