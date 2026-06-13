@@ -2,6 +2,17 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Global tracking coordinates for the flashlight spotlight pointer
+let currentMouseX = 400;
+let currentMouseY = 300;
+
+// Central mouse coordinate scanner hook to update flashlight position fluidly
+canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    currentMouseX = e.clientX - rect.left;
+    currentMouseY = e.clientY - rect.top;
+});
+
 // Clears the canvas background cleanly on every single frame loop
 function clearGameCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
