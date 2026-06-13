@@ -39,7 +39,7 @@ function startTrashSpawner() {
         for (let i = 0; i < piecesToSpawn; i++) {
             let randomTypeIndex = Math.floor(Math.random() * totalTrashTypes);
             let randomX = Math.floor(Math.random() * 400) + 150;
-            let randomY = Math.floor(Math.random() * 250) + 100;
+            let randomY = Math.floor(Math.random() * 200) + 100;
 
             trashList.push({
                 assetIndex: randomTypeIndex,
@@ -72,18 +72,21 @@ function checkTrashClick(mx, my) {
     return false;
 }
 
-function updateTrashDragging(mx, my) {
-    if (selectedTrash && selectedTrash.isDragging) {
-        selectedTrash.x = mx - (selectedTrash.width / 2);
-        selectedTrash.y = my - (selectedTrash.height / 2);
-    }
-}
+// Independent, dedicated trash layer canvas input drivers
+canvas.addEventListener("mousemove", (e) => {
+    if (Game.state !== "PLAY" || !selectedTrash) return;
+    const rect = canvas.getBoundingClientRect();
+    let mx = e.clientX - rect.left;
+    let my = e.clientY - rect.top;
 
-function releaseTrashDrop() {
-    if (!selectedTrash) return;
+    selectedTrash.x = mx - (selectedTrash.width / 2);
+    selectedTrash.y = my - (selectedTrash.height / 2);
+});
+
+canvas.addEventListener("mouseup", () => {
+    if (Game.state !== "PLAY" || !selectedTrash) return;
 
     selectedTrash.isDragging = false;
-
     let trashCenterX = selectedTrash.x + (selectedTrash.width / 2);
     let trashCenterY = selectedTrash.y + (selectedTrash.height / 2);
 
@@ -99,7 +102,7 @@ function releaseTrashDrop() {
     }
 
     selectedTrash = null;
-}
+});
 
 function updateAndDrawTrash() {
     if (Game.currentLevel < 17) return;
