@@ -10,6 +10,7 @@ const WIRE_COLORS = new Array("#ff3366", "#33ccff", "#ffcc00", "#33ff66");
 function initWires() {
     wires = new Array();
     selectedWire = null;
+    levelWiresCompleted = 0;
     
     // Create start nodes on the left side (fixed pixel heights down the canvas)
     const leftPositions = new Array(150, 250, 350, 450);
@@ -39,7 +40,6 @@ function initWires() {
 
 // Reset function called by levels.js when moving up a level stage
 function resetWiresForNewLevel() {
-    levelWiresCompleted = 0;
     initWires();
 }
 
@@ -61,7 +61,14 @@ canvas.addEventListener("mousedown", (e) => {
         }
     }
 
-    // SECOND: Grab the wire if no characters intercepted the click
+    // SECOND: Check if player clicked a piece of trash. If true, stop here!
+    if (typeof checkTrashClick === "function") {
+        if (checkTrashClick(mouseX, mouseY)) {
+            return;
+        }
+    }
+
+    // THIRD: Grab the wire if no characters or trash intercepted the click
     for (let wire of wires) {
         if (!wire.isConnected) {
             const distance = Math.hypot(mouseX - wire.startX, mouseY - wire.startY);
@@ -81,6 +88,11 @@ canvas.addEventListener("mousemove", (e) => {
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
 
+    // Run physics updater for active dragging trash layers
+    if (typeof updateTrashDragging === "function") {
+        updateTrashDragging(mouseX, mouseY);
+    }
+
     if (selectedWire && selectedWire.isDragging) {
         selectedWire.currentX = mouseX;
         selectedWire.currentY = mouseY;
@@ -89,6 +101,11 @@ canvas.addEventListener("mousemove", (e) => {
 
 // Check target connection mechanics when releasing the mouse click
 canvas.addEventListener("mouseup", () => {
+    // Run trash dropping logic hooks
+    if (typeof releaseTrashDrop === "function") {
+        releaseTrashDrop();
+    }
+
     if (!selectedWire) return;
 
     selectedWire.isDragging = false;
@@ -105,7 +122,7 @@ canvas.addEventListener("mouseup", () => {
         levelWiresCompleted++;
         console.log("Connected wire! Total: " + levelWiresCompleted);
         
-        // Push progress to levels.js validation controller
+        // Push progress to level validation controller
         if (typeof checkLevelProgress === "function") {
             checkLevelProgress(levelWiresCompleted);
         }
