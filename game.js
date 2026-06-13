@@ -138,6 +138,34 @@ function drawAdrenalineTimer() {
     ctx.strokeRect(100, 20, 600, 15);
 }
 
+// CRITICAL EXTENSION: Global Flashlight Overlay Mask for Level 34+
+function applyBlackoutFlashlightEffect() {
+    if (Game.currentLevel < 34) return; // Only trigger blackout if Level 34 or higher!
+
+    // Save our canvas state before applying the darkness mask layer
+    ctx.save();
+    
+    // Set our rendering composition rule to "destination-in" 
+    // This makes everything invisible EXCEPT where we draw our flashlight circle!
+    ctx.globalCompositeOperation = "destination-in";
+    
+    // Draw the circular beam of your flashlight around your current mouse point coordinates
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(currentMouseX, currentMouseY, 110, 0, Math.PI * 2); // 110px radius headlight circle beam
+    ctx.fill();
+    
+    // Restore the standard drawing canvas composition state
+    ctx.restore();
+    
+    // Fill the empty outer voids manually with solid black veil casing back-paneling
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-over";
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+}
+
 // Master Engine Loop
 function mainGameLoop() {
     if (!Game.isLoopRunning) return;
@@ -156,22 +184,30 @@ function mainGameLoop() {
         return;
     }
 
+    // 1. Clear baseline grid background panels
     if (typeof clearGameCanvas === "function") {
         clearGameCanvas();
     }
 
+    // 2. Process and draw active color channel line matches
     if (typeof updateAndDrawWires === "function") {
         updateAndDrawWires();
     }
     
+    // 3. Process and draw active shattering rock overlays
     if (typeof updateAndDrawCharacters === "function") {
         updateAndDrawCharacters();
     }
 
+    // 4. Process and draw floating debris components
     if (typeof updateAndDrawTrash === "function") {
         updateAndDrawTrash();
     }
 
+    // 5. INJECT DARKNESS: Blind the screen view if player hits Nelsin's tier zones (Level 34+)
+    applyBlackoutFlashlightEffect();
+
+    // 6. Draw the top adrenaline countdown overlay on top of the black mask so players can always see their timer
     drawAdrenalineTimer();
 
     requestAnimationFrame(mainGameLoop);
@@ -190,6 +226,9 @@ window.onload = () => {
             
             if (i === 11) option.text += " (Rock Enemy Introduces)";
             if (i === 17) option.text += " (Trash & Bin Introduces)";
+            if (i === 21) option.text += " (Color Taker Introduces)";
+            if (i === 34) option.text += " (Nelsin Blackout Introduces)";
+            if (i === 45) option.text += " (Snail 'The' Introduces)";
             
             selectElement.appendChild(option);
         }
